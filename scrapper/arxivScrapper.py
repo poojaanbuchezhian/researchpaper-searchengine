@@ -7,9 +7,12 @@ import json
 from urllib.parse import urlencode
 from urllib.request import urlopen
 from urllib.error import HTTPError
+
 OAI = '{http://www.openarchives.org/OAI/2.0/}'
 ARXIV = '{http://arxiv.org/OAI/arXiv/}'
 BASE = 'http://export.arxiv.org/oai2?verb=ListRecords&'
+
+
 class Record(object):
     def __init__(self, xml_record):
         self.xml = xml_record
@@ -21,11 +24,13 @@ class Record(object):
         self.created = self._get_text(ARXIV, 'created')
         self.updated = self._get_text(ARXIV, 'updated')
         self.authors = self._get_authors()
+
     def _get_text(self, namespace, tag):
         try:
             return self.xml.find(namespace + tag).text.strip().lower().replace('\n', ' ')
         except:
             return ''
+
     def _get_name(self, parent, attribute):
         try:
             return parent.find(ARXIV + attribute).text.lower()
@@ -36,8 +41,9 @@ class Record(object):
         authors_xml = self.xml.findall(ARXIV + 'authors/' + ARXIV + 'author')
         last_names = [self._get_name(author, 'keyname') for author in authors_xml]
         first_names = [self._get_name(author, 'forenames') for author in authors_xml]
-        full_names = [a+' '+b for a,b in zip(first_names, last_names)]
+        full_names = [a + ' ' + b for a, b in zip(first_names, last_names)]
         return full_names
+
     def output(self):
         d = {
             'title': self.title,
@@ -48,16 +54,19 @@ class Record(object):
             'updated': self.updated,
             'authors': self.authors,
             'url': self.url
-             }
+        }
         return d
+
+
 class Scraper(object):
     def __init__(self, category):
         self.cat = str(category)
         self.t = 30
         self.timeout = 300
-        self.f='2010-10-10'
-        self.u='2020-10-10'
+        self.f = '2010-10-10'
+        self.u = '2020-10-10'
         self.url = BASE + 'from=' + self.f + '&until=' + self.u + '&metadataPrefix=arXiv&set=%s' % self.cat
+
     def scrape(self):
         t0 = time.time()
         tx = time.time()
@@ -94,16 +103,25 @@ class Scraper(object):
             else:
                 url = BASE + 'resumptionToken=%s' % token.text
             ty = time.time()
-            elapsed += (ty-tx)
+            elapsed += (ty - tx)
             if elapsed >= self.timeout:
                 break
             else:
                 tx = time.time()
         t1 = time.time()
         print('fetching is completed in {0:.1f} seconds.'.format(t1 - t0))
-        print ('Total number of records {:d}'.format(len(ds)))
+        print('Total number of records {:d}'.format(len(ds)))
         return ds
-scraper = Scraper(category='stat')
+
+
+#scraper = Scraper(category='physics')
+#scraper = Scraper(category='stat')
+#scraper = Scraper(category='math')
+#scraper = Scraper(category='q-bio')
+#scraper = Scraper(category='q-fin')
+#scraper = Scraper(category='econ')
+#scraper = Scraper(category='eess')
+#scraper = Scraper(category='cs')
 output = scraper.scrape()
-with open('D:\9th semester\Information Retrieval Lab\package\scrapper\data\stat.json','w')as f:
-    json.dump(output,f)
+with open("C:/Study/NinthSem/Information Retrieval/Package/researchpaper-searchengine/scrapper/data/stat.json",'w')as f:
+    json.dump(output, f)
