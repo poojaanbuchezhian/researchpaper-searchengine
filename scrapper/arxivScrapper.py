@@ -4,6 +4,7 @@ import datetime
 import time
 import sys
 import json
+import pandas as pd
 from urllib.parse import urlencode
 from urllib.request import urlopen
 from urllib.error import HTTPError
@@ -114,14 +115,21 @@ class Scraper(object):
         return ds
 
 
-#scraper = Scraper(category='physics')
+def get_tokenized_corpus(filename):
+    df = pd.read_pickle(filename)
+    tokenized_corpus = []
+    for i in range(df.shape[0]):
+        tokenized_corpus.append(df.iloc[i]['tokens'])
+    return tokenized_corpus
+
+# scraper = Scraper(category='physics')
 #scraper = Scraper(category='stat')
-#scraper = Scraper(category='math')
-#scraper = Scraper(category='q-bio')
-#scraper = Scraper(category='q-fin')
-#scraper = Scraper(category='econ')
-#scraper = Scraper(category='eess')
-#scraper = Scraper(category='cs')
-output = scraper.scrape()
+# scraper = Scraper(category='math')
+# scraper = Scraper(category='q-bio')
+# scraper = Scraper(category='q-fin')
+# scraper = Scraper(category='econ')
+# scraper = Scraper(category='eess')
+# scraper = Scraper(category='cs')
+"""output = scraper.scrape()
 with open("C:/Study/NinthSem/Information Retrieval/Package/researchpaper-searchengine/scrapper/data/stat.json",'w')as f:
-    json.dump(output, f)
+    json.dump(output, f)"""

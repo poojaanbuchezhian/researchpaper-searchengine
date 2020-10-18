@@ -1,4 +1,6 @@
 import ast
+import pickle
+
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import RegexpTokenizer
@@ -14,7 +16,7 @@ import hashedindex
 
 index = hashedindex.HashedIndex()
 lemmatizer = WordNetLemmatizer()
-more_stopwords = [word.strip() for word in open('D:/9th semester/Information Retrieval Lab/package/lemur-stopwords.txt', 'r').readlines()]
+more_stopwords = [word.strip() for word in open('C:/Study/NinthSem/Information Retrieval/Package/lemur-stopwords.txt', 'r').readlines()]
 tokenizer = RegexpTokenizer('\w+|\$[\d\.]+|\S+')
 punc_table = str.maketrans('', '', '"#$\'()*+/:<=>@[\\]^_`{|}~') # for cleaning paper abstract
 df = pd.DataFrame(columns=['id', 'title', 'abstract', 'authors', 'link'])
@@ -103,9 +105,9 @@ preprocess_content('D:/9th semester/Information Retrieval Lab/package/scrapper/d
 preprocess_content('D:/9th semester/Information Retrieval Lab/package/scrapper/data/corpus5.pkl', 5)
 
 """
-docs=docs_collect('D:/9th semester/Information Retrieval Lab/package/scrapper/data/tokenized_corpus1.pkl',docs)
-docs=docs_collect('D:/9th semester/Information Retrieval Lab/package/scrapper/data/tokenized_corpus2.pkl',docs)
-docs=docs_collect('D:/9th semester/Information Retrieval Lab/package/scrapper/data/tokenized_corpus3.pkl',docs)
-docs=docs_collect('D:/9th semester/Information Retrieval Lab/package/scrapper/data/tokenized_corpus4.pkl',docs)
-docs=docs_collect('D:/9th semester/Information Retrieval Lab/package/scrapper/data/tokenized_corpus5.pkl',docs)
+docs=docs_collect('C:/Study/NinthSem/Information Retrieval/Package/scrapper/data/tokenized_corpus1.pkl',docs)
+docs=docs_collect('C:/Study/NinthSem/Information Retrieval/Package/scrapper/data/tokenized_corpus2.pkl',docs)
+docs=docs_collect('C:/Study/NinthSem/Information Retrieval/Package/scrapper/data/tokenized_corpus3.pkl',docs)
+docs=docs_collect('C:/Study/NinthSem/Information Retrieval/Package/scrapper/data/tokenized_corpus4.pkl',docs)
+docs=docs_collect('C:/Study/NinthSem/Information Retrieval/Package/scrapper/data/tokenized_corpus5.pkl',docs)
 result=indexing(docs)
