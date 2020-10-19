@@ -26,26 +26,26 @@ class Record(object):
         self.updated = self._get_text(ARXIV, 'updated')
         self.authors = self._get_authors()
 
-    def _get_text(self, namespace, tag):
+    def _get_text(self, namespace, tag): #extract the tags content from xml
         try:
             return self.xml.find(namespace + tag).text.strip().lower().replace('\n', ' ')
         except:
             return ''
 
-    def _get_name(self, parent, attribute):
+    def _get_name(self, parent, attribute): #extract the attributes of authors - firstname and lastname
         try:
             return parent.find(ARXIV + attribute).text.lower()
         except:
             return "n/a"
 
-    def _get_authors(self):
+    def _get_authors(self): #extract the list of authors
         authors_xml = self.xml.findall(ARXIV + 'authors/' + ARXIV + 'author')
         last_names = [self._get_name(author, 'keyname') for author in authors_xml]
         first_names = [self._get_name(author, 'forenames') for author in authors_xml]
         full_names = [a + ' ' + b for a, b in zip(first_names, last_names)]
         return full_names
 
-    def output(self):
+    def output(self): #the json output file format
         d = {
             'title': self.title,
             'id': self.id,
@@ -68,7 +68,7 @@ class Scraper(object):
         self.u = '2020-10-10'
         self.url = BASE + 'from=' + self.f + '&until=' + self.u + '&metadataPrefix=arXiv&set=%s' % self.cat
 
-    def scrape(self):
+    def scrape(self): # scraping by reading the response and converting to xml and parsing the xml and extracting required info and converting it to json
         t0 = time.time()
         tx = time.time()
         elapsed = 0.0
@@ -115,12 +115,6 @@ class Scraper(object):
         return ds
 
 
-def get_tokenized_corpus(filename):
-    df = pd.read_pickle(filename)
-    tokenized_corpus = []
-    for i in range(df.shape[0]):
-        tokenized_corpus.append(df.iloc[i]['tokens'])
-    return tokenized_corpus
 
 # scraper = Scraper(category='physics')
 #scraper = Scraper(category='stat')
