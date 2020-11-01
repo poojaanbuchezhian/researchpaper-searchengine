@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Research Paper Search Engine</title>
+<meta charset='utf-8'>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<script>
+var numResults;
+var query = '';
+resultData = null;
+var resultPage = 0;
+var resultsPerPage = 10;
+
+var URL = window.location.href;
+
+$(function (){
+    $('#SearchWait').hide();
+    $('#next').hide();
+    $('#backpage').hide();
+    $('#message').hide();
+});
+
+var getResults = function(){
+    $('.search-results-container').empty();
+    $('.search-results-container').append('Fetching your results...');
+    $.ajax({
+        type: 'POST',
+        url: URL + 'search/',
+        data: {query: query},
+        dataType: 'json',
+        success: function(data){
+            resultData = data;
+            showResults();
+        }
+    });
+};
+
+var showResults = function(){
+    $('.search-results-container').empty();
+    var limit = Math.min(resultData.titles.length - resultsPerPage*resultPage, resultsPerPage)
+    for (var i=0; i < limit; ++i){
+        rank = resultPage * resultsPerPage + i;
+        $('.search-results-container').append('<hr><div class="query-result">');
+
+        if(resultData.links[rank]){
+            $('.search-results-container').append('<p style="font-size:20px; color:DarkBlue; margin:0px;"><a href="' + resultData.links[rank] + '" target="_blank" onClick="selectRadio(' + resultData.ids[rank] + ')">' + resultData.titles[rank] + '</a></p>');
+        }else{
+            $('.search-results-container').append('<p style="font-size:20px; color:DarkBlue; margin:0px;">' + resultData.titles[rank] + '</p>');
+        }
+
+
+        $('.search-results-container').append('<p>' + resultData.abstracts[rank] + '</p>');
+        $('.search-results-container').append('</div>');
+    }
+
+
+    $('#next').show();
+    $('#backpage').show();
+    $('#message').hide();
+
+    if(limit == 0 && resultPage == 0){
+        $('.search-results-container').append('<p style="font-size:20px; color:DarkBlue">Unfortunately, we were not able to find papers that match your query.</p>');
+        $('#next').hide();
+        $('#backpage').hide();
+    }
+
+    if(resultData.titles.length <= (resultPage+1)*resultsPerPage){
+        $('#next').hide();
+    }
+
+    if(resultPage == 0){
+        $('#backpage').hide();
+    }
+};
+
+
+
+$(document).ready(function(){
+    $('#search-button').click(function(){
+        resultPage = 0;
+        query = $('#query').val();
+        example_image = 'none';
+        getResults();
+    });
+
+    $('#next').click(function(){
+        resultPage = resultPage + 1;
+        query = $('#query').val();
+        showResults();
+    });
+
+
+    $('#backpage').click(function(){
+        resultPage = resultPage - 1;
+        query = $('#query').val();
+        showResults();
+    });
+
+    $('#query').keydown(function(event) {
+        if (event.keyCode == 13) {
+            event.preventDefault();
+            $('#search-button').click();
+        }
+    });
+});
+
+</script>
+
+<style>
+.my-button{
+	background-color: #2f49ac;
+	border-radius: 7px;
+    height: 30px;
+    color: #ffffff;
+    vertical-align: top
+}
+</style>
+
+</head>
+<body>
+<center>
+    <h1>Research Papers Search Engine</h1>
+    <div>
+        <textarea id='query' rows='3' cols='75' style='border-radius: 7px;' autofocus placeholder='Enter your Query here'></textarea>
+        <button type='button' id='search-button' class='my-button' value='none'> <b>Find Papers !</b></button>
+    </div>
+</center>
+<br>
+<div class='search-results-container'> </div>
+<center>
+    <button type='button' id='backpage' class='my-button' value='none'> <b>Go Back</b></button>
+    <button type='button' id='next' class='my-button' value='none'><b>I Want More !</b></button>
+</center>
+<br>
+</body>
+</html>

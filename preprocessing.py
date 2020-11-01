@@ -1,5 +1,6 @@
 import pickle
 from nltk.corpus import stopwords
+from nltk.tokenize import RegexpTokenizer
 from nltk.stem import WordNetLemmatizer
 import pandas as pd
 import string
@@ -57,7 +58,23 @@ def get_tokenized_corpus(filename):
     for i in range(df.shape[0]):
         tokenized_corpus.append(df.iloc[i]['tokens'])
     return tokenized_corpus
-
+def get_corpus(filename):
+    df = pd.read_pickle(filename)
+    corpus = []
+    for i in range(df.shape[0]):
+        corpus.append({'title': df.iloc[i]['title'], 'abstract': df.iloc[i]['abstract'], 'authors': df.iloc[i]['authors'],
+                       'link': df.iloc[i]['link'], 'id': df.iloc[i]['id']})
+    return corpus
+def preprocess_query(query_string):
+    tokenizer = RegexpTokenizer('\w+|\$[\d\.]+|\S+')
+    query_string = query_string.lower()
+    new_text = tokenizer.tokenize(query_string)
+    new_text = [word.translate(str.maketrans('', '', string.punctuation)) for word in new_text if word not in stopwords.words('english') and word not in more_stopwords]
+    new_text = [lemmatizer.lemmatize(word) for word in new_text]
+    return new_text
+def remove_punctuations(text):
+    punc_table = str.maketrans('', '', '"#$\'()*+/:<=>@[\\]^_`{|}~')
+    return text.translate(punc_table)
 """
 df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/cs.json'),df,id)
 df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/econ.json'),df,id)
