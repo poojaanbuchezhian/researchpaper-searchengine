@@ -47,12 +47,21 @@ var showResults = function(){
         }else{
             $('.search-results-container').append('<p style="font-size:20px; color:DarkBlue; margin:0px;">' + resultData.titles[rank] + '</p>');
         }
-
-
+        $('.search-results-container').append('<p style="font-size:20px; color:Red; margin:0px;">' + "The category the paper belongs to :  " + '<b>' + resultData.category[rank] + '</b>' + '</p>');
         $('.search-results-container').append('<p>' + resultData.abstracts[rank] + '</p>');
+        $('.search-results-container').append('<input type=button class="search-related" name="' + resultData.titles[rank] + ' ' + resultData.abstracts[rank].replace(/<b>/g,'').replace(/<\/b>/g,'') + '" value="Show similar papers">');
         $('.search-results-container').append('</div>');
     }
 
+
+    $('input[type=radio]').on('change', function(){
+        $.post(URL+'save_relevance/', {query: query, doc_id: this.name, rel_score: this.id == 'rel_' + this.name ? 1 : -1}, dataType='json');
+    });
+
+    $('input[class="search-related"]').on('click', function(){
+        $('#query').val(this.name);
+        $('#search-button').click();
+    });
 
     $('#next').show();
     $('#backpage').show();
@@ -114,6 +123,14 @@ $(document).ready(function(){
     color: #ffffff;
     vertical-align: top
 }
+.search-related {
+	background-color: #ee980f;
+	border-radius: 7px;
+    height: 30px;
+    color: #ffffff
+}
+
+
 </style>
 
 </head>

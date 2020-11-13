@@ -8,10 +8,13 @@ import json
 
 lemmatizer = WordNetLemmatizer() #lemmatizing
 more_stopwords = [word.strip() for word in open('D:\9th semester\Information Retrieval Lab\package\lemur-stopwords.txt', 'r').readlines()] #lemur stopwords
-df = pd.DataFrame(columns=['id', 'title', 'abstract', 'authors', 'link']) # dataframe to read from json
+df = pd.DataFrame(columns=['id', 'title', 'abstract', 'authors', 'link' , 'category']) # dataframe to read from json
 id=0    #track count of docs
 def preprocess_document(acad_papers,df,id):
-    json_array = json.load(acad_papers) #load jsonarray
+    json_array = json.load(open(acad_papers)) #load jsonarray
+    l=acad_papers.split('/')
+    l1=l[len(l)-1].split('.')
+    category=l1[0]
     for x in json_array:
         try:
             paper = {}
@@ -20,12 +23,13 @@ def preprocess_document(acad_papers,df,id):
             paper['abstract'] = x['abstract']
             paper['authors'] = ' '.join(map(str, x['authors'])) #making authors list to a string
             paper['link'] = x['url']
+            paper['category']=category
             df = df.append(paper, ignore_index=True)
             id += 1
         except:
             continue
     return df,id
-def splitDataFrameIntoSmaller(df, chunkSize = 20000):
+def splitDataFrameIntoSmaller(df, chunkSize = 20000): 
     listOfDf = list()
     numberChunks = len(df) // chunkSize + 1
     for i in range(numberChunks):
@@ -75,16 +79,43 @@ def preprocess_query(query_string):
 def remove_punctuations(text):
     punc_table = str.maketrans('', '', '"#$\'()*+/:<=>@[\\]^_`{|}~')
     return text.translate(punc_table)
+
 """
-df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/cs.json'),df,id)
-df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/econ.json'),df,id)
-df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/eess.json'),df,id)
-df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/math.json'),df,id)
-df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/physics.json'),df,id)
-df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/q-bio.json'),df,id)
-df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/q-fin.json'),df,id)
-df,id=preprocess_document(open('D:/9th semester/Information Retrieval Lab/package/scrapper/data/stat.json'),df,id)
+df,id=preprocess_document('D:/9th semester/Information Retrieval Lab/package/scrapper/data/cs.json',df,id)
+print(id)
+df,id=preprocess_document('D:/9th semester/Information Retrieval Lab/package/scrapper/data/econ.json',df,id)
+print(id)
+df,id=preprocess_document('D:/9th semester/Information Retrieval Lab/package/scrapper/data/eess.json',df,id)
+print(id)
+df,id=preprocess_document('D:/9th semester/Information Retrieval Lab/package/scrapper/data/math.json',df,id)
+print(id)
+df,id=preprocess_document('D:/9th semester/Information Retrieval Lab/package/scrapper/data/physics.json',df,id)
+print(id)
+df,id=preprocess_document('D:/9th semester/Information Retrieval Lab/package/scrapper/data/q-bio.json',df,id)
+print(id)
+df,id=preprocess_document('D:/9th semester/Information Retrieval Lab/package/scrapper/data/q-fin.json',df,id)
+print(id)
+df,id=preprocess_document('D:/9th semester/Information Retrieval Lab/package/scrapper/data/stat.json',df,id)
+print(id)
 print(df)
+
+df['tokens'] = df['title'] + ' ' + df['abstract'] + ' ' + df['authors']
+tokenized_df = pd.DataFrame(columns=['id', 'tokens', 'category'])
+for i in range(df.shape[0]):
+        paper = df.iloc[i]
+        print(i)
+        tokens = paper[['tokens']][0].lower().split()
+        tokens = [word.translate(str.maketrans('', '', string.punctuation)) for word in tokens if word not in stopwords.words('english') and word not in more_stopwords]
+        tokens = [lemmatizer.lemmatize(word) for word in tokens]
+        tokenized_df = tokenized_df.append({'id': paper[['id']], 'tokens': tokens, 'category': paper[['category']] }, ignore_index=True)
+print(tokenized_df)
+listdfs =  splitDataFrameIntoSmaller(tokenized_df)
+listdfs[0].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation1.pkl')
+listdfs[1].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation2.pkl')
+listdfs[2].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation3.pkl')
+listdfs[3].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation4.pkl')
+listdfs[4].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation5.pkl')
+
 
 listdfs =  splitDataFrameIntoSmaller(df)
 listdfs[0].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/corpus1.pkl')
@@ -98,5 +129,31 @@ preprocess_content('D:/9th semester/Information Retrieval Lab/package/scrapper/d
 preprocess_content('D:/9th semester/Information Retrieval Lab/package/scrapper/data/corpus3.pkl', 3)
 preprocess_content('D:/9th semester/Information Retrieval Lab/package/scrapper/data/corpus4.pkl', 4)
 preprocess_content('D:/9th semester/Information Retrieval Lab/package/scrapper/data/corpus5.pkl', 5)
+
+
+
+df1 = pd.DataFrame(columns=['id', 'tokens', 'category'])
+def get_tokenized_corpus(filename,df1):
+    f = pd.read_pickle(filename)
+    for i in range(f.shape[0]):
+        print(f.iloc[i]['id']['id'])
+        data={}
+        data['tokens']=' '.join(f.iloc[i]['tokens'])
+        data['id']=f.iloc[i]['id']['id']
+        data['category']=f.iloc[i]['category']['category']
+        df1 = df1.append(data, ignore_index=True)
+    return df1
+df1=get_tokenized_corpus('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation1.pkl',df1)
+df1=get_tokenized_corpus('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation2.pkl',df1)
+df1=get_tokenized_corpus('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation3.pkl',df1)
+df1=get_tokenized_corpus('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation4.pkl',df1)
+df1=get_tokenized_corpus('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation5.pkl',df1)
+print(df1)
+listdfs =  splitDataFrameIntoSmaller(df1)
+listdfs[0].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation1_new.pkl')
+listdfs[1].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation2_new.pkl')
+listdfs[2].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation3_new.pkl')
+listdfs[3].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation4_new.pkl')
+listdfs[4].to_pickle('D:/9th semester/Information Retrieval Lab/package/scrapper/data/data_categorisation5_new.pkl')
 
 """
